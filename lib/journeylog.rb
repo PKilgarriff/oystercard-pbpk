@@ -2,16 +2,18 @@ class JourneyLog
 
   attr_reader :entry_station, :exit_station
 
-  def initialize
-    @journeys = [Journey.new]
+  def initialize(journey_class)
+    @journeys = []
+    @ongoing_journey = journey_class
   end
 
   def start(entry_station)
-    current_journey.start_journey(entry_station)
+    @ongoing_journey.start_journey(entry_station)
   end
 
   def finish(exit_station)
-    @exit_station = exit_station
+    @ongoing_journey.end_journey(exit_station)
+    @journeys << @ongoing_journey.journey_record
   end
 
   # works out which journey object to call
@@ -21,8 +23,8 @@ class JourneyLog
 
   def list_journeys
     @journeys.each do |journey|
-      puts [journey.journey_record[:entry],
-      journey.journey_record[:exit]].join(' to ')
+      puts [journey[:entry],
+      journey[:exit]].join(' to ')
     end
   end
 end

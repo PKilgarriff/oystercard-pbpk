@@ -10,7 +10,8 @@
 require 'journeylog'
 
 describe JourneyLog do
-  subject(:log) { described_class.new }
+  let(:journey) {double(:journey_double)}
+  subject(:log) { described_class.new(journey) }
 
   # describe '#start' do
   #   it 'changes the entry station' do
@@ -24,14 +25,18 @@ describe JourneyLog do
   #   end
   # end
 
-  describe '#current_journey' do
-    it 'is an actual method' do
-      expect(log.current_journey.class).to eq (Journey) 
-    end 
-  end
+  # describe '#current_journey' do
+  #   it 'is an actual method' do
+  #     allow(journey).to receive(:complete?).and_return(true)
+  #     expect(log.current_journey.class).to eq (Journey) 
+  #   end 
+  # end
 
   describe '#list_journeys' do
-    it 'prints a lits of journeys' do
+    it 'prints a list of journeys' do
+      allow(journey).to receive(:journey_record).and_return({ entry: 'Waterloo', exit: 'Victoria' })
+      allow(journey).to receive(:end_journey)
+      log.finish("test")
       expect { log.list_journeys }.to output("Waterloo to Victoria\n").to_stdout
     end
   end
