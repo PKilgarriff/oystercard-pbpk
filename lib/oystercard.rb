@@ -19,6 +19,7 @@ class Oystercard
   end
 
   def touch_in(entry_station)
+    deduct unless @current_journey.journey_record[:entry].nil?
     fail 'Insufficient Funds' if under_min_balance?
 
     @current_journey.start_journey(entry_station)
@@ -40,6 +41,7 @@ class Oystercard
   end
 
   def deduct
-    @balance -= @current_journey.fare
+    @balance -= @current_journey.journey_record[:fare]
   end
 end
+

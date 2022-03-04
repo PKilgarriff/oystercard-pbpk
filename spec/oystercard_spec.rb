@@ -1,5 +1,4 @@
 require 'oystercard'
-require 'journey'
 
 describe Oystercard do
   subject(:card) { described_class.new }
@@ -23,7 +22,7 @@ describe Oystercard do
       expect { card.top_up(20) }.to change { card.balance }.by(20)
     end
 
-    it 'stops you topping up over £90' do
+    it 'stops you topping up too much' do
       too_much = Oystercard::MAX_BALANCE + 1
       expect { card.top_up(too_much) }.to raise_error 'Maximum limit reached'
     end
@@ -33,21 +32,31 @@ describe Oystercard do
     it 'raises an error if insufficient funds' do
       expect { card.touch_in(station.name) }.to raise_error 'Insufficient Funds'
     end
+
+    it 'deducts the penalty if the previous journey is incomplete' do
+      card.top_up(Oystercard::MIN_FARE + 10)
+      allow(journey).to receive(:complete?).and_return(false)
+      stub_const('PENALTY_FARE', 6)
+      card.touch_in(station.name)
+      expect { card.touch_in(station.name) }.to change { card.balance }.by(-PENALTY_FARE)
+    end
   end
 
   describe '#touch_out' do
     before do
       card.top_up(Oystercard::MIN_FARE + 1)
-      card.touch_in(station.name)
-    end
-
-    it 'takes one argument' do
-      expect(card).to respond_to(:touch_out).with(1).argument
     end
 
     it 'deducts the minimum fare after complete journey' do
-      allow(journey).to receive(:fare).and_return(1)
+      card.touch_in(station.name)
+      allow(journey).to receive(:journey_record).and_return({ fare: Oystercard::MIN_FARE })
       expect { card.touch_out(station.name) }.to change { card.balance }.by(-Oystercard::MIN_FARE)
+    end
+  
+    it 'deducts the penalty if the journey is incomplete' do
+      allow(journey).to receive(:complete?).and_return(false)
+      stub_const('PENALTY_FARE', 6)
+      expect { card.touch_out(station.name) }.to change { card.balance }.by(-PENALTY_FARE)
     end
   end
 end

@@ -19,27 +19,35 @@ describe Journey do
       journey.end_journey('Sloane Square')
       expect(journey.journey_record).to include(
         entry: 'Waterloo',
-        exit: 'Sloane Square'
+        exit: 'Sloane Square',
+        fare: 1
+     )
+    end
+
+    it 'returns a hash without touch in' do
+      journey.end_journey('Sloane Square')
+      expect(journey.journey_record).to include(
+        entry: nil,
+        exit: 'Sloane Square',
+        fare: 6
+     )
+    end
+      
+    it 'returns a hash without touch out' do
+      journey.start_journey('Waterloo')
+      expect(journey.journey_record).to include(
+        entry: 'Waterloo',
+        exit: nil,
+        fare: 6
      )
     end
   end
-  
+
   # journey complete?
   context 'checks if the journey is complete' do
     it 'returns false when incomplete' do
       journey.start_journey('Waterloo')
       expect(journey.complete?).to be false
     end
-  end
-
-  # calculating fare
-  it 'deducts penalty fare if the journey is incomplete' do
-    allow(journey).to receive(:complete?).and_return(false)
-    expect(journey.fare).to eq 6
-  end
-  
-  it 'deducts minimum fare if the journey is complete' do
-    allow(journey).to receive(:complete?).and_return(true)
-    expect(journey.fare).to eq 1
   end
 end
